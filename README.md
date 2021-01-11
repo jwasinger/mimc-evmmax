@@ -1,1 +1,3 @@
-## TODO give attribution to circomlib
+actively under development.  things may be broken.
+
+`npm run build && npm run test`
