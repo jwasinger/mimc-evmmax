@@ -32,3 +32,10 @@ let res = mulmodmont(a, b)
 if (fromMont(res).toString() !== new BN(2 * 2).toString()) {
     throw("fromMont/toMont broken")
 }
+
+// a is  the first nonzero round constant in montgomery form
+a = new BN(0x53e27bc8307157ce5836bff1f4ee44ae7bdd790e2e696e0965ac8dfe4478c84n)
+let a_squared = mulmodmont(a, a)
+if (a_squared.toString(16) !== '47643d8d4b33bf5a14371bd30f7474749ac07fa02ba7ac1c1f1595af9f9688c') {
+    throw("square broken")
+}
