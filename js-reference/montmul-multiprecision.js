@@ -1,4 +1,5 @@
 const BN = require('bn.js')
+const {toMont, fromMont} = require('./montmul-reference.js')
 
 const bn128_curve_order = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
 // montgomery parameters for field defined by bn128 curve order
@@ -89,8 +90,31 @@ function mulmodmont256(a, b, m, inv) {
     return out
 }
 
+function num_eq(a, b) {
+    for (let i = 0; i < NUM_LIMBS; i++) {
+        if (a[i] != b[i]) {
+            return false
+        }
+    }
+
+    return true
+}
+
 console.log("testing conversion to/from bignum")
-debugger
 if (num_to_string(num_to_limbs(bn128_curve_order)) !== bn128_curve_order.toString()) {
     throw("failed")
 }
+
+console.log("testing mulmodmont using bn128 Fr params")
+
+mod = num_to_limbs(bn128_curve_order)
+let a = num_to_limbs(toMont(BigInt(2)))
+let b = num_to_limbs(toMont(BigInt(2)))
+let c = mulmodmont256(a, b, mod, bn128_r_inv)
+let expected = num_to_limbs(toMont(BigInt(4)))
+
+if (!num_eq(c, expected)) {
+    throw("failed")
+}
+
+console.log("passed")
