@@ -1,32 +1,32 @@
 const BN = require('bn.js')
 
-const bn128_curve_order = new BN("21888242871839275222246405745257275088548364400416034343698204186575808495617")
+const bn128_curve_order = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
 // montgomery parameters for field defined by bn128 curve order
-const bn128_r_inv = new BN("134950519161967129512891662437158223871")
-const bn128_r_squared = new BN("944936681149208446651664254269745548490766851729442924617792859073125903783")
+const bn128_r_inv = 134950519161967129512891662437158223871n
+const bn128_r_squared = 944936681149208446651664254269745548490766851729442924617792859073125903783n
 
 const NUM_LIMBS = 4
-const MASK64 = 0xffffffffn
-const MASK128 = 0xffffffffffffffffn
+const MASK64 = 0xffffffffffffffffn
+const MASK128 = 0xffffffffffffffffffffffffffffffffn
 
 function num_to_limbs(num) {
     let result = [0n, 0n, 0n, 0n]
     for (let i = 0; i < NUM_LIMBS; i++) {
-        result[i] = num | MASK64 
-        num >> 64n
+        result[i] = num & MASK64 
+        num = num >> 64n
     }
 
     return result
 }
 
 function num_to_string(num) {
-    let result = ""
+    let result = 0n
 
     for (let i = 0; i < NUM_LIMBS; i++) {
-        result += num[i].toString()
+        result += (num[i] & MASK64) << (BigInt(i) * 64n)
     }
 
-    return result
+    return result.toString()
 }
 
 function EVM384Element(num) {
@@ -41,6 +41,8 @@ function sub(a,b, mod) {
         carry = (result[i] >> 16n) == 0? 0n : 1n
         // result[i] &= MASK64
     }
+
+    return result
 }
 
 function mulmodmont256(a, b, m, inv) {
@@ -87,4 +89,8 @@ function mulmodmont256(a, b, m, inv) {
     return out
 }
 
-// number limbs are little endian
+console.log("testing conversion to/from bignum")
+debugger
+if (num_to_string(num_to_limbs(bn128_curve_order)) !== bn128_curve_order.toString()) {
+    throw("failed")
+}
