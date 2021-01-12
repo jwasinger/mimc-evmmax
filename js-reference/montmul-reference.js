@@ -1,8 +1,7 @@
 const { bn128_params, bls12381_params, MASK128} = require('./util.js')
 
 function toMont(a, curve_params) {
-    // mont form of a: aR % modulus
-    return (a << 256n) % curve_params.modulus 
+    return mulmodmont(a, curve_params.r_squared, curve_params)
 }
 
 function fromMont(a, curve_params) {
