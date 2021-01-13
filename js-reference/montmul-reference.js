@@ -9,8 +9,11 @@ function fromMont(a, curve_params) {
     return mulmodmont(a, 1n, curve_params)
 }
 
-
 function mulmodmont(a, b, curve_params) {
+    return mulmodmont_non_interleaved(a, b, curve_params)
+}
+
+function mulmodmont_non_interleaved(a, b, curve_params) {
   var t = a * b
   var k0 = (t * curve_params.r_inv) & MASK128
   var res2 = ((k0 * curve_params.modulus) + t) >> 128n

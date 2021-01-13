@@ -27,4 +27,6 @@ function testCurve(curve_params) {
     assert.strictEqual((curve_params.r_inv * curve_params.modulus) % curve_params.aux_mod, curve_params.aux_mod - 1n)
 }
 
+console.log("testing bn128")
 testCurve(bn128_params)
+console.log("passed")
