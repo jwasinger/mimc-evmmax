@@ -2,9 +2,10 @@ const { gen_return, gen_mstore, gen_push, constants } = require("./util.js")
 
 let BN128_CURVE_ORDER = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
 
-// lower 64 bits of modular inverse of the montgomery parameter (with curve order as modulus)?  why do we only need this part for montmul?
-// 134950519161967129512891662437158223871n  & 0xffffffffffffffff = 
-let BN128_R_INV = 0xc2e1f593efffffffn
+let BN128_R_INV = 134950519161967129512891662437158223871n >> 64n
+
+// lower hex(inv_val & 0xffffffffffffffff)
+// upper hex(134950519161967129512891662437158223871 >> 64)
 
 const SIZE_F = constants.SIZE_F
 
