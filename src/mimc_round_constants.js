@@ -248,4 +248,13 @@ let mimc_round_constants_mont = [
     0x0n]
 
 mimc_round_constants_mont = mimc_round_constants_mont.map((x) => bigint_to_le_hexstring(x))
+
+// TODO move this into bigint_to_le_hexstring
+mimc_round_constants_mont = mimc_round_constants_mont.map((x) => {
+    if (x.length != 64) {
+        x = x + '00'
+    }
+    return x
+})
+
 module.exports.mimc_round_constants_mont = mimc_round_constants_mont
