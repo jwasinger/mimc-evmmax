@@ -33,7 +33,6 @@ module.exports.MiMCGenerator = () => {
 
         /* first round */ 
         this.emit([
-            //gen_return(modinv, 56),
             // t = k_in + xL_in
             gen_addmod384(tmp1, k_in, xL_in, modinv),
 
@@ -132,7 +131,7 @@ module.exports.MiMCGenerator = () => {
         this.emit([
             // c = ( round_constants.buffer as usize + SIZE_F * ( (i - 1) % num_round_constants)) as usize;
             gen_mstore(offset_round_constant, round_constants[(num_rounds - 2) % round_constants.length]),
-            gen_return(xL_result_prev, SIZE_F),
+            // gen_return(offset_round_constant, SIZE_F),
 
             // t = k_in  + mem[xL_result_table-1] + c;
             gen_addmod384(tmp1, xL_result_prev, offset_round_constant, modinv),
@@ -149,17 +148,20 @@ module.exports.MiMCGenerator = () => {
             gen_addmod384(xL_out, tmp2, xL_result_prev_2, modinv)
         ])
 
+/*
         tmp = xL_result_prev_2
         xL_result_prev_2 = xL_result_prev
         xL_result_prev = xL_result
         xL_result = tmp
+*/
 
         /* last round */
         this.emit([
-            gen_mstore(offset_round_constant, 0),
+            gen_mstore(offset_round_constant, round_constants[(num_rounds - 1) % round_constants.length]),
 
             // t = mem[xL_result_table] + mem[xL_result_table - SIZE_F] + c
-            gen_addmod384(tmp1, xL_out, xL_result_prev, offset_round_constant, modinv),
+            gen_addmod384(tmp1, xL_out, offset_round_constant, modinv),
+            gen_addmod384(tmp1, tmp1, k_in, modinv),
 
             // t2 = t * t
             gen_mulmodmont384(tmp2, tmp1, tmp1, modinv),
@@ -169,7 +171,7 @@ module.exports.MiMCGenerator = () => {
 
             // xR_out = xL_result_prev_2 + t4 * t
             gen_mulmodmont384(tmp2, tmp2, tmp1, modinv),
-            gen_addmod384(xR_out, xL_result_prev_2, tmp2, modinv)
+            gen_addmod384(xR_out, xL_result_prev, tmp2, modinv),
         ])
     }
 
