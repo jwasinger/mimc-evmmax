@@ -11,7 +11,19 @@ module.exports.MiMCGenerator = () => {
         this.ops = this.ops.concat(vals)
     }
 
-    this.mimc_cipher = (xL_in, xR_in, k_in, xL_out, xR_out, modinv, alloc_offset) => {
+    this.mimc_init = (offset) => {
+        this.emit([
+            gen_mstore(offset + round_constants.length * 48, 0x00)
+        ])
+
+        for (let i = 0; i < round_constants.length; i++) {
+            this.emit([
+                gen_mstore(offset + i * 48, round_constants[i])
+            ])
+        }
+    }
+
+    this.mimc_cipher = (xL_in, xR_in, k_in, xL_out, xR_out, modinv, offset_round_constants, alloc_offset) => {
 
         /* 
             most rounds make use of the results of the previous 2 rounds.
@@ -21,8 +33,7 @@ module.exports.MiMCGenerator = () => {
         let xL_result = alloc_offset;
         let xL_result_prev = xL_result + SIZE_F;
         let xL_result_prev_2 = xL_result_prev + SIZE_F;
-        let offset_round_constant = xL_result_prev_2 + SIZE_F;
-        let tmp1 = offset_round_constant + SIZE_F;
+        let tmp1 = xL_result_prev_2+ SIZE_F;
         let tmp2 = tmp1 + SIZE_F;
 
         const num_rounds = 220
@@ -50,13 +61,14 @@ module.exports.MiMCGenerator = () => {
         tmp = xL_result_prev
         xL_result_prev  = xL_result
         xL_result = tmp 
+        offset_round_constants += 48
 
         /* second round */
         this.emit([
-            gen_mstore(offset_round_constant, round_constants[1], 32),
+            //gen_mstore(offset_round_constant, round_constants[1], 32),
 
             // t = k + k[i-1] + c
-            gen_addmod384(xL_result, xL_result_prev, offset_round_constant, modinv),
+            gen_addmod384(xL_result, xL_result_prev, offset_round_constants, modinv),
             gen_addmod384(xL_result, xL_result, k_in, modinv),
 
             // t2 = t * t
@@ -76,14 +88,15 @@ module.exports.MiMCGenerator = () => {
         xL_result_prev_2 = xL_result_prev
         xL_result_prev = xL_result
         xL_result = tmp
+        offset_round_constants += 48
 
         /* rounds [3..num_rounds-2] (inclusive range) */
         for (let i = 2; i < num_rounds - 2; i++) {
             this.emit([
-                gen_mstore(offset_round_constant, round_constants[i % round_constants.length]),
+                // gen_mstore(offset_round_constant, round_constants[i % round_constants.length]),
                 
                 // t = x_L_result_prev + k_in + c
-                gen_addmod384(tmp1, k_in, offset_round_constant, modinv),
+                gen_addmod384(tmp1, k_in, offset_round_constants, modinv),
                 gen_addmod384(tmp1, tmp1, xL_result_prev, modinv),
 
                 // t**2 = t * t
@@ -123,18 +136,15 @@ module.exports.MiMCGenerator = () => {
             xL_result_prev_2 = xL_result_prev
             xL_result_prev = xL_result
             xL_result = tmp
+            offset_round_constants += 48
         }
 
 
         /* 2nd to last round */
         
         this.emit([
-            // c = ( round_constants.buffer as usize + SIZE_F * ( (i - 1) % num_round_constants)) as usize;
-            gen_mstore(offset_round_constant, round_constants[(num_rounds - 2) % round_constants.length]),
-            // gen_return(offset_round_constant, SIZE_F),
-
             // t = k_in  + mem[xL_result_table-1] + c;
-            gen_addmod384(tmp1, xL_result_prev, offset_round_constant, modinv),
+            gen_addmod384(tmp1, xL_result_prev, offset_round_constants, modinv),
             gen_addmod384(tmp1, tmp1, k_in, modinv),
 
             // t2 = t * t
@@ -147,6 +157,7 @@ module.exports.MiMCGenerator = () => {
             gen_mulmodmont384(tmp2, tmp2, tmp1, modinv),
             gen_addmod384(xL_out, tmp2, xL_result_prev_2, modinv)
         ])
+        offset_round_constants += 48
 
 /*
         tmp = xL_result_prev_2
@@ -157,10 +168,8 @@ module.exports.MiMCGenerator = () => {
 
         /* last round */
         this.emit([
-            gen_mstore(offset_round_constant, round_constants[(num_rounds - 1) % round_constants.length]),
-
             // t = mem[xL_result_table] + mem[xL_result_table - SIZE_F] + c
-            gen_addmod384(tmp1, xL_out, offset_round_constant, modinv),
+            gen_addmod384(tmp1, xL_out, offset_round_constants, modinv),
             gen_addmod384(tmp1, tmp1, k_in, modinv),
 
             // t2 = t * t
