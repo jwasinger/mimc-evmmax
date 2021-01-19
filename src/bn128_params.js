@@ -7,7 +7,8 @@ let BN128_R_INV = 134950519161967129512891662437158223871n >> 64n
 // lower hex(inv_val & 0xffffffffffffffff)
 // upper hex(134950519161967129512891662437158223871 >> 64)
 
-const SIZE_F = constants.SIZE_F
+// const SIZE_F = constants.SIZE_F
+const SIZE_F = 1
 
 function bigint_to_le_hexstring(bigint) {
     str = bigint.toString(16)

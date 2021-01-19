@@ -1,6 +1,7 @@
 const {MiMCGenerator} = require('./mimcsponge.js')
 const {constants, gen_return, gen_calldatacopy, gen_mstore} = require("./util.js")
-const SIZE_F = constants.SIZE_F
+// const SIZE_F = constants.SIZE_F
+const SIZE_F = 1
 
 const {init_curve_params} = require("./bn128_params.js")
 
@@ -10,15 +11,13 @@ function gen_mimc_contract() {
     const offset_inputs = 0
     const offset_outputs = offset_inputs + 2 * SIZE_F
     const modinv = offset_outputs + 2 * SIZE_F
-    const offset_k = modinv + SIZE_F + 8
-    const alloc_offset = offset_k+ SIZE_F 
-
-    debugger
+    const offset_k = modinv + 2
+    const alloc_offset = offset_k + SIZE_F 
 
     // TODO store bn128 params at right offset
 
     let ops = [
-        gen_mstore(alloc_offset, 0),
+        gen_mstore(alloc_offset * 48, 0),
         init_curve_params(modinv),
         gen_calldatacopy(offset_inputs, 0, SIZE_F * 2)
     ]

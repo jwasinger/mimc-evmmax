@@ -1,7 +1,7 @@
 const round_constants = require("./mimc_round_constants").mimc_round_constants_mont
 const {constants, gen_return, gen_addmod384, gen_mulmodmont384, gen_mstore, gen_memcopy} = require("./util.js")
 
-const SIZE_F = constants.SIZE_F
+const SIZE_F = 1 // constants.SIZE_F
 
 module.exports.MiMCGenerator = () => {
     self = this
@@ -28,7 +28,7 @@ module.exports.MiMCGenerator = () => {
         const num_rounds = 220
 
         this.emit([
-            gen_mstore(tmp2 + SIZE_F, 0) // store something to expand memory up thru how much we want to allocate
+            gen_mstore((tmp2 + SIZE_F) * 48, 0) // store something to expand memory up thru how much we want to allocate
         ])
 
         /* first round */ 
@@ -53,7 +53,7 @@ module.exports.MiMCGenerator = () => {
 
         /* second round */
         this.emit([
-            gen_mstore(offset_round_constant, round_constants[1], 32),
+            gen_mstore(offset_round_constant * 48, round_constants[1], 32),
 
             // t = k + k[i-1] + c
             gen_addmod384(xL_result, xL_result_prev, offset_round_constant, modinv),
@@ -80,7 +80,7 @@ module.exports.MiMCGenerator = () => {
         /* rounds [3..num_rounds-2] (inclusive range) */
         for (let i = 2; i < num_rounds - 2; i++) {
             this.emit([
-                gen_mstore(offset_round_constant, round_constants[i % round_constants.length]),
+                gen_mstore(offset_round_constant * 48, round_constants[i % round_constants.length]),
                 
                 // t = x_L_result_prev + k_in + c
                 gen_addmod384(tmp1, k_in, offset_round_constant, modinv),
@@ -130,7 +130,7 @@ module.exports.MiMCGenerator = () => {
         
         this.emit([
             // c = ( round_constants.buffer as usize + SIZE_F * ( (i - 1) % num_round_constants)) as usize;
-            gen_mstore(offset_round_constant, round_constants[(num_rounds - 2) % round_constants.length]),
+            gen_mstore(offset_round_constant * 48, round_constants[(num_rounds - 2) % round_constants.length]),
             // gen_return(offset_round_constant, SIZE_F),
 
             // t = k_in  + mem[xL_result_table-1] + c;
@@ -157,7 +157,7 @@ module.exports.MiMCGenerator = () => {
 
         /* last round */
         this.emit([
-            gen_mstore(offset_round_constant, round_constants[(num_rounds - 1) % round_constants.length]),
+            gen_mstore(offset_round_constant * 48, round_constants[(num_rounds - 1) % round_constants.length]),
 
             // t = mem[xL_result_table] + mem[xL_result_table - SIZE_F] + c
             gen_addmod384(tmp1, xL_out, offset_round_constant, modinv),

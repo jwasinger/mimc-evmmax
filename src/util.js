@@ -1,7 +1,7 @@
 // convert a uint64 to a padded little endian hex string
 function uint32_to_be_hex_string(num) {
     result = num.toString(16)
-    fill_length = 8 - result.length
+    fill_length = 4 - result.length
 
     if (fill_length > 0) {
         result = "0".repeat(fill_length) + result
