@@ -80,12 +80,7 @@ function gen_push(value) {
         value = "0" + value 
     }
 
-    let fill_len = 64 - value.length
-    if (fill_len > 0) {
-        value = "0".repeat(fill_len) + value // literals are little endian even tho evm is be
-    }
-
-    return push_lookup[32] + value
+    return push_lookup[value.length/2] + value
 }
 
 const constants  = {
