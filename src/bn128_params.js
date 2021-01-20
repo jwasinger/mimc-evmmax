@@ -8,7 +8,7 @@ let BN128_R_INV = 134950519161967129512891662437158223871n >> 64n
 // upper hex(134950519161967129512891662437158223871 >> 64)
 
 // const SIZE_F = constants.SIZE_F
-const SIZE_F = 1
+const SIZE_F = 48
 
 function bigint_to_le_hexstring(bigint) {
     str = bigint.toString(16)
@@ -34,6 +34,7 @@ BN128_CURVE_ORDER = bigint_to_le_hexstring(BN128_CURVE_ORDER)
 BN128_R_INV = bigint_to_le_hexstring(BN128_R_INV) + '0'.repeat(48)
 
 function init_curve_params(offset) {
+    debugger
     return gen_mstore(offset, BN128_CURVE_ORDER) + gen_mstore(offset + SIZE_F, BN128_R_INV)
 }
 
