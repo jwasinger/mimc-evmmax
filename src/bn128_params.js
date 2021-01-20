@@ -34,7 +34,6 @@ BN128_CURVE_ORDER = bigint_to_le_hexstring(BN128_CURVE_ORDER)
 BN128_R_INV = bigint_to_le_hexstring(BN128_R_INV) + '0'.repeat(48)
 
 function init_curve_params(offset) {
-    debugger
     return gen_mstore(offset, BN128_CURVE_ORDER) + gen_mstore(offset + SIZE_F, BN128_R_INV)
 }
 

@@ -104,7 +104,6 @@ const constants  = {
 
 module.exports = {
     gen_addmod384: (offset_out, offset_x, offset_y, offset_mod) => {
-        debugger
         return gen_push(encode_offsets(offset_out, offset_x, offset_y, offset_mod)) + constants.OP_ADDMOD384
     },
     gen_submod384: (offset_out, offset_x, offset_y, offset_mod) => {

@@ -13,7 +13,7 @@ function gen_mimc_contract() {
     const offset_inputs = offset_modinv + SIZE_F
     const offset_outputs = offset_inputs + 2 * SIZE_F
     const modinv = offset_outputs + 2 * SIZE_F
-    const offset_k = modinv + 2
+    const offset_k = modinv + 2 * SIZE_F
     const alloc_offset = offset_k + SIZE_F 
 
     // TODO store bn128 params at right offset
@@ -24,13 +24,14 @@ function gen_mimc_contract() {
         gen_calldatacopy(offset_inputs, 0, SIZE_F * 2)
     ]
     
-    mimc.mimc_cipher(to_evm384_addressing_mode(offset_inputs, offset_inputs),
-                     to_evm384_addressing_mode(offset_inputs, offset_inputs + SIZE_F), 
-                     to_evm384_addressing_mode(offset_inputs, offset_k),
-                     to_evm384_addressing_mode(offset_inputs, offset_outputs), 
-                     to_evm384_addressing_mode(offset_inputs, offset_outputs + SIZE_F),
-                     to_evm384_addressing_mode(offset_inputs, alloc_offset),
-                     offset_inputs)
+    mimc.mimc_cipher(to_evm384_addressing_mode(0, offset_inputs),
+                     to_evm384_addressing_mode(0, offset_inputs + SIZE_F), 
+                     to_evm384_addressing_mode(0, offset_k),
+                     to_evm384_addressing_mode(0, offset_outputs), 
+                     to_evm384_addressing_mode(0, offset_outputs + SIZE_F),
+                     to_evm384_addressing_mode(0, modinv),
+                     to_evm384_addressing_mode(0, alloc_offset),
+                     0)
 
     ops = ops.concat(mimc.ops)
 

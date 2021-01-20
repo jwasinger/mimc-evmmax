@@ -51,12 +51,15 @@ module.exports.MiMCGenerator = () => {
         xL_result_prev  = xL_result
         xL_result = tmp 
 
+        debugger
+
         /* second round */
         this.emit([
             gen_mstore(from_evm384_addressing_mode(evm384_mem_start, offset_round_constant), round_constants[1], 32),
-
             // t = k + k[i-1] + c
+            // gen_return(from_evm384_addressing_mode(evm384_mem_start, offset_round_constant), 48),
             gen_addmod384(xL_result, xL_result_prev, offset_round_constant, modinv),
+            //gen_return(from_evm384_addressing_mode(evm384_mem_start, offset_round_constant), 48),
             gen_addmod384(xL_result, xL_result, k_in, modinv),
 
             // t2 = t * t
