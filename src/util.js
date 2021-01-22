@@ -47,12 +47,52 @@ function gen_mstore(offset, value) {
     return gen_push(value) + gen_push(offset) + "52"
 }
 
+function gen_mload() {
+    return "51"
+}
+
+function gen_iszero() {
+    return "15"
+}
+
+function gen_eq() {
+    return "14"
+}
+
+function gen_or() {
+    return "17"
+}
+
+function gen_shl() {
+    return "1b"
+}
+
+function gen_shr() {
+    return "1c"
+}
+
+function gen_jumpdest() {
+    return "5b"
+}
+
+function gen_jumpi() {
+    return "57"
+}
+
+function gen_callvalue() {
+    return "34"
+}
+
 function gen_calldatacopy(result_offset, calldata_offset, n_bytes) {
     return gen_push(n_bytes) + gen_push(calldata_offset) + gen_push(result_offset) + "37"
 }
 
 function gen_return(offset, n_bytes) {
     return gen_push(n_bytes) + gen_push(offset) + "f3"
+}
+
+function gen_revert(offset, n_bytes) {
+    return gen_push(n_bytes) + gen_push(offset) + "fd"
 }
 
 function gen_with_immediate(base_op, value) {
@@ -103,8 +143,18 @@ module.exports = {
     gen_swap: gen_swap,
     // store single 32 byte word at offset
     gen_mstore: gen_mstore,
+    gen_mload: gen_mload,
+    gen_iszero: gen_iszero,
+    gen_eq: gen_eq,
+    gen_or: gen_or,
+    gen_shl: gen_shl,
+    gen_shr: gen_shr,
+    gen_jumpdest: gen_jumpdest,
+    gen_jumpi: gen_jumpi,
+    gen_callvalue: gen_callvalue,
     gen_calldatacopy: gen_calldatacopy,
     gen_return: gen_return,
+    gen_revert: gen_revert,
     constants: constants,
     to_evm384_addressing_mode: to_evm384_addressing_mode,
     from_evm384_addressing_mode: from_evm384_addressing_mode
