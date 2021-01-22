@@ -121,6 +121,10 @@ function gen_swap(value) {
     return to_padded_hex(0x90 + value - 1)
 }
 
+function gen_pop() {
+    return "50"
+}
+
 const constants  = {
     SIZE_F: 48,
     OP_ADDMOD384: "c0",
@@ -141,6 +145,7 @@ module.exports = {
     gen_push: gen_push,
     gen_dup: gen_dup,
     gen_swap: gen_swap,
+    gen_pop: gen_pop,
     // store single 32 byte word at offset
     gen_mstore: gen_mstore,
     gen_mload: gen_mload,

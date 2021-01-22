@@ -1,5 +1,6 @@
 const {MiMCGenerator} = require('./mimcsponge.js')
 const {to_evm384_addressing_mode, constants, gen_return, gen_revert, gen_callvalue, gen_calldatacopy, gen_push, gen_dup, gen_mstore, gen_mload, gen_iszero, gen_eq, gen_jumpdest, gen_jumpi} = require("./util.js")
+const {gen_bswap256} = require("./bswap.js")
 // const SIZE_F = constants.SIZE_F
 const SIZE_F = 48
 
@@ -92,8 +93,11 @@ function gen_mimc_contract() {
         gen_push(32),
         gen_push(68),
         gen_push(offset_k),
-        gen_calldatacopy()
-        // TOOD: byteswap xL/xR/k
+        gen_calldatacopy(),
+        // byteswap inputs from big-endian to little-endian
+        gen_bswap256(offset_inputs),
+        gen_bswap256(offset_inputs + 48),
+        gen_bswap256(offset_k)
     ]
 
 /*
@@ -163,6 +167,8 @@ function gen_mimc_contract() {
         gen_mload(),
         gen_push(offset_outputs + 32),
         "52", // mstore
+        gen_bswap256(offset_outputs),
+        gen_bswap256(offset_outputs + 32),
         gen_return(offset_outputs, 2 * 32)
     ])
 
