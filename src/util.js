@@ -1,3 +1,17 @@
+const assert = require('assert')
+
+function to_padded_hex(value) {
+    if (typeof(value) === "number" || typeof(value) === "bigint") {
+        value = value.toString(16)
+    } else {
+        assert(typeof(value) === "string")
+    }
+    if (value.length % 2 !== 0) {
+        return "0" + value
+    }
+    return value
+}
+
 // evm384 element size in bytes
 const SIZE_F = 48
 
@@ -8,7 +22,6 @@ function to_evm384_addressing_mode(start, offset) {
 function from_evm384_addressing_mode(start, offset) {
     return (offset - start)  * SIZE_F
 }
-
 
 // convert a uint64 to a padded little endian hex string
 function uint32_to_be_hex_string(num) {
@@ -42,57 +55,20 @@ function gen_return(offset, n_bytes) {
     return gen_push(n_bytes) + gen_push(offset) + "f3"
 }
 
-const push_lookup = {
-    1: '60',
-    2: '61',
-    3: '62',
-    4: '63',
-    5: '64',
-    6: '65',
-    7: '66',
-    8: '67',
-    9: '68',
-    10: '69',
-    11: '6a',
-    12: '6b',
-    13: '6c',
-    14: '6d',
-    15: '6e',
-    16: '6f',
-    17: '70',
-    18: '71',
-    19: '72',
-    20: '73',
-    21: '74',
-    22: '75',
-    23: '76',
-    24: '77',
-    25: '78',
-    26: '79',
-    27: '7a',
-    28: '7b',
-    29: '7c',
-    30: '7d',
-    31: '7e',
-    32: '7f'
+function gen_with_immediate(base_op, value) {
+    value = to_padded_hex(value)
+
+    if (value.length > 64) {
+        throw("push value size must not be larger than 32 bytes")
+    } else if (value.length < 2) {
+        throw("push value size must not be smaller than 1 byte")
+    }
+
+    return to_padded_hex(base_op + (value.length / 2) - 1) + value
 }
 
 function gen_push(value) {
-    if (typeof(value) === "number") {
-        value = value.toString(16)
-    } else if (typeof(value) === "bigint") {
-        value = value.toString(16)
-    }
-
-    if (value.length > 64) {
-        throw("push32 value size must not be larger than 32 bytes")
-    }
-
-    if (value.length % 2 != 0) {
-        value = "0" + value 
-    }
-
-    return push_lookup[value.length/2] + value
+    return gen_with_immediate(0x60, value)
 }
 
 const constants  = {
