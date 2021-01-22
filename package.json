@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "bash test.sh | grep -q \"0x048af575c0ba33fadc36a2db5509a6b758d79481f09188c3a7eb3114bc0a5f24000000000000000000000000000000005402b4afb70553503098444ec48d1ceb61cd68606a9d7685caf14bc78926e51400000000000000000000000000000000\"",
+    "test": "bash test.sh | grep -q \"0x40ba1d69ffb73e7de2ad0ee730bf341a31bb41fa76a4194a6685b90d7a77272000000000000000000000000000000000a78a6ac573db2892701712f99a4a2856a9ec13f316c4a2d38be75ae4d976cb2e00000000000000000000000000000000\"",
     "build": "rm -rf build && mkdir build && node src/contract.js > build/mimc_cipher.hex"
   },
   "repository": {
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/jwasinger/mimc-evm384#readme",
   "dependencies": {
+    "circomlib": "^0.4.1",
     "ffjavascript": "0.1.0",
     "web3": "^1.3.0"
   }
