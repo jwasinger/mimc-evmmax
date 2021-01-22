@@ -1,5 +1,5 @@
 const {MiMCGenerator} = require('./mimcsponge.js')
-const {to_evm384_addressing_mode, constants, gen_return, gen_calldatacopy, gen_mstore} = require("./util.js")
+const {to_evm384_addressing_mode, constants, gen_return, gen_revert, gen_callvalue, gen_calldatacopy, gen_push, gen_mstore, gen_mload, gen_iszero, gen_eq, gen_jumpdest, gen_jumpi} = require("./util.js")
 // const SIZE_F = constants.SIZE_F
 const SIZE_F = 48
 
@@ -19,10 +19,99 @@ function gen_mimc_contract() {
     // TODO store bn128 params at right offset
 
     let ops = [
-        gen_mstore(alloc_offset * 48, 0),
-        init_curve_params(offset_mod),
-        gen_calldatacopy(offset_inputs, 0, SIZE_F * 2)
+        // Check for incoming value (and reject if so)
+        gen_callvalue(),
+        gen_iszero(),
+        gen_push(10), // to sig
+        gen_jumpi(),
+        gen_push(0),
+        gen_push(0),
+        gen_revert(),
+        // Check signature and inputs
+        // sig:
+        gen_jumpdest(),
+        gen_push(4),
+        gen_push(0),
+        gen_push(28),
+        gen_calldatacopy(),
+        gen_push(0),
+        gen_mload(),
+        gen_push(0x3f1a1187),
+        gen_eq(),
+        gen_push(35), // to init
+        gen_jumpi(),
+        gen_push(0),
+        gen_push(0),
+        gen_revert(),
+        // init:
+        gen_jumpdest(),
+        // TODO: make ABI strict and reject short inputs?
+        // load xL
+        gen_push(32),
+        gen_push(4),
+        gen_push(offset_inputs),
+        gen_calldatacopy(),
+        // load xR
+        gen_push(32),
+        gen_push(36),
+        gen_push(offset_inputs + 48),
+        gen_calldatacopy(),
+        // load k
+        gen_push(32),
+        gen_push(68),
+        gen_push(offset_k),
+        gen_calldatacopy()
+        // TOOD: byteswap xL/xR/k
     ]
+
+/*
+    // Check for incoming value
+    callvalue
+    iszero
+    jumpi <sig>
+    push 0
+    dup 1
+    revert
+
+    // Check signature
+    sig:
+    push 4
+    push 0
+    push 28
+    calldatacopy
+    push 0
+    mload
+    push 0x3f1a1187
+    eq
+    jumpi <init>
+    push 0
+    dup 1
+    revert
+
+    init:
+    // Load xL
+    push 32
+    push 4
+    push <offset_inputs + 16>
+    calldatacopy
+
+    // Load xR
+    push 32
+    push 36
+    push <offset_inputs + 16 + 48>
+    calldatacopy
+
+    // Load k
+    push 32
+    push 68
+    push <offset_k + 16>
+    calldatacopy
+*/
+
+    ops = ops.concat([
+        gen_mstore(alloc_offset * 48, 0),
+        init_curve_params(offset_mod)
+    ])
     
     mimc.mimc_cipher(to_evm384_addressing_mode(0, offset_inputs),
                      to_evm384_addressing_mode(0, offset_inputs + SIZE_F), 

@@ -83,16 +83,16 @@ function gen_callvalue() {
     return "34"
 }
 
-function gen_calldatacopy(result_offset, calldata_offset, n_bytes) {
-    return gen_push(n_bytes) + gen_push(calldata_offset) + gen_push(result_offset) + "37"
+function gen_calldatacopy() {
+    return "37"
 }
 
 function gen_return(offset, n_bytes) {
     return gen_push(n_bytes) + gen_push(offset) + "f3"
 }
 
-function gen_revert(offset, n_bytes) {
-    return gen_push(n_bytes) + gen_push(offset) + "fd"
+function gen_revert() {
+    return "fd";
 }
 
 function gen_with_immediate(base_op, value) {
