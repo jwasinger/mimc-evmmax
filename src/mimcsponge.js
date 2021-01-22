@@ -24,11 +24,13 @@ module.exports.MiMCGenerator = () => {
         let offset_round_constant = xL_result_prev_2 + SIZE_F;
         let tmp1 = offset_round_constant + SIZE_F;
         let tmp2 = tmp1 + SIZE_F;
+        let pOne = tmp2 + SIZE_F;
 
         const num_rounds = 220
 
         this.emit([
-            gen_mstore(from_evm384_addressing_mode(evm384_mem_start, tmp2 + SIZE_F), 0) // store something to expand memory up thru how much we want to allocate
+            gen_mstore(from_evm384_addressing_mode(evm384_mem_start, pOne + SIZE_F), 0), // store something to expand memory up thru how much we want to allocate
+            gen_mstore(from_evm384_addressing_mode(evm384_mem_start, pOne), "0100000000000000000000000000000000000000000000000000000000000000")
         ])
 
         /* first round */ 
@@ -50,8 +52,6 @@ module.exports.MiMCGenerator = () => {
         tmp = xL_result_prev
         xL_result_prev  = xL_result
         xL_result = tmp 
-
-        debugger
 
         /* second round */
         this.emit([
@@ -94,33 +94,11 @@ module.exports.MiMCGenerator = () => {
                 // t**4 = t**2 * t**2
                 gen_mulmodmont384(tmp2, tmp2, tmp2, modinv),
                 // xL_result = t**5
-                gen_mulmodmont384(xL_result, tmp2, tmp1, modinv)])
-
-
-/*
-            if (i == 32) {
-                this.emit([
-                    gen_return(xL_result, SIZE_F)
-                ])
-            }
-*/
-
-
-            this.emit([
-
+                gen_mulmodmont384(xL_result, tmp2, tmp1, modinv),
 
                 // xL_result = xL_result + xL_result_prev_2
                 gen_addmod384(xL_result, xL_result, xL_result_prev_2, modinv)
             ])
-
-/*
-            if (i == 100) {
-                this.emit([
-                    gen_return(xL_result, SIZE_F)
-                ])
-            }
-*/
-
 
             tmp = xL_result_prev_2
             xL_result_prev_2 = xL_result_prev
@@ -148,15 +126,8 @@ module.exports.MiMCGenerator = () => {
 
             // xL_out = t5 + xL_result_table_prev_2
             gen_mulmodmont384(tmp2, tmp2, tmp1, modinv),
-            gen_addmod384(xL_out, tmp2, xL_result_prev_2, modinv)
+            gen_addmod384(xL_out, tmp2, xL_result_prev_2, modinv),
         ])
-
-/*
-        tmp = xL_result_prev_2
-        xL_result_prev_2 = xL_result_prev
-        xL_result_prev = xL_result
-        xL_result = tmp
-*/
 
         /* last round */
         this.emit([
@@ -175,6 +146,10 @@ module.exports.MiMCGenerator = () => {
             // xR_out = xL_result_prev_2 + t4 * t
             gen_mulmodmont384(tmp2, tmp2, tmp1, modinv),
             gen_addmod384(xR_out, xL_result_prev, tmp2, modinv),
+            
+            // convert both outputs out of montgomery form
+            gen_mulmodmont384(xR_out, xR_out, pOne, modinv),
+            gen_mulmodmont384(xL_out, xL_out, pOne, modinv)
         ])
     }
 
