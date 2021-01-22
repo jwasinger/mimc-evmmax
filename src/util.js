@@ -71,6 +71,16 @@ function gen_push(value) {
     return gen_with_immediate(0x60, value)
 }
 
+function gen_dup(value) {
+    assert(value >= 1 && value <= 16)
+    return to_padded_hex(0x80 + value - 1)
+}
+
+function gen_swap(value) {
+    assert(value >= 1 && value <= 16)
+    return to_padded_hex(0x90 + value - 1)
+}
+
 const constants  = {
     SIZE_F: 48,
     OP_ADDMOD384: "c0",
@@ -89,6 +99,8 @@ module.exports = {
         return gen_push(encode_offsets(offset_out, offset_x, offset_y, offset_mod)) + constants.OP_MULMODMONT384
     },
     gen_push: gen_push,
+    gen_dup: gen_dup,
+    gen_swap: gen_swap,
     // store single 32 byte word at offset
     gen_mstore: gen_mstore,
     gen_calldatacopy: gen_calldatacopy,
