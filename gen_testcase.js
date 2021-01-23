@@ -29,9 +29,13 @@ function convert_le_to_be_hexstring(num) {
 function convert_test_val_to_evm384_input(t) {
     t = t.toString(16) 
 
+    if (t.length % 2 != 0) {
+        t = '0' + t
+    }
+
     t = convert_le_to_be_hexstring(t)
 
-    let fill_len = 96 - t.length
+    let fill_len = 64 - t.length
     if (fill_len > 0) {
         t += "0".repeat(fill_len)
     }
@@ -42,6 +46,10 @@ function convert_test_val_to_evm384_input(t) {
 // TODO read these from stdin
 let xL_in = 2n
 let xR_in = 4n
+
+debugger
+let circomlib_output = mimc_hash(xL_in, xR_in, 0)
+
 
 assert.equal(xL_in, from_mont(to_mont(xL_in)))
 assert.equal(xR_in, from_mont(to_mont(xR_in)))
