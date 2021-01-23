@@ -1,5 +1,5 @@
 const {MiMCGenerator} = require('./mimcsponge.js')
-const {to_evm384_addressing_mode, constants, gen_return, gen_revert, gen_callvalue, gen_calldatacopy, gen_push, gen_mstore, gen_mload, gen_iszero, gen_eq, gen_jumpdest, gen_jumpi} = require("./util.js")
+const {to_evm384_addressing_mode, constants, gen_return, gen_revert, gen_callvalue, gen_calldatacopy, gen_push, gen_dup, gen_mstore, gen_mload, gen_iszero, gen_eq, gen_jumpdest, gen_jumpi} = require("./util.js")
 // const SIZE_F = constants.SIZE_F
 const SIZE_F = 48
 
@@ -22,10 +22,10 @@ function gen_mimc_contract() {
         // Check for incoming value (and reject if so)
         gen_callvalue(),
         gen_iszero(),
-        gen_push(10), // to sig
+        gen_push(9), // to sig
         gen_jumpi(),
         gen_push(0),
-        gen_push(0),
+        gen_dup(1),
         gen_revert(),
         // Check signature and inputs
         // sig:
@@ -38,10 +38,10 @@ function gen_mimc_contract() {
         gen_mload(),
         gen_push(0x3f1a1187),
         gen_eq(),
-        gen_push(35), // to init
+        gen_push(33), // to init
         gen_jumpi(),
         gen_push(0),
-        gen_push(0),
+        gen_dup(1),
         gen_revert(),
         // init:
         gen_jumpdest(),
