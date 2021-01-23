@@ -16,8 +16,20 @@ function to_mont(val) {
     return (val * r) % mod
 }
 
+function convert_le_to_be_hexstring(num) {
+    let chunks = []
+    for (let i = 0; i < num.length; i += 2) {
+        chunks.push(num[i]+num[i + 1])
+    }
+
+    chunks.reverse()
+    return chunks.join("")
+}
+
 function convert_test_val_to_evm384_input(t) {
     t = t.toString(16) 
+
+    t = convert_le_to_be_hexstring(t)
 
     let fill_len = 96 - t.length
     if (fill_len > 0) {
@@ -40,4 +52,7 @@ let xR_in_mont = to_mont(xR_in)
 let evm_input = convert_test_val_to_evm384_input(xL_in_mont) + convert_test_val_to_evm384_input(xR_in_mont)
 
 console.log("test case for xL_in = " + xL_in.toString() + " xR_in = " + xR_in.toString())
-console.log(evm_input)
+
+encoded_testcase = "3f1a1187"+evm_input
+console.log(encoded_testcase)
+console.log(encoded_testcase.length)
