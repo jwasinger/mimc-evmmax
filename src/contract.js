@@ -124,8 +124,14 @@ function gen_mimc_contract() {
 
     ops = ops.concat(mimc.ops)
 
+    // Here we remove the 16 bytes of zeroes between the two outputs,
+    // and return it as (uint256 xL, uint256 xR) in the Solidity ABI.
     ops = ops.concat([
-        gen_return(offset_outputs, SIZE_F * 2)
+        gen_push(offset_outputs + 48),
+        gen_mload(),
+        gen_push(offset_outputs + 32),
+        "52", // mstore
+        gen_return(offset_outputs, 2 * 32)
     ])
 
     result = ops.join("")
