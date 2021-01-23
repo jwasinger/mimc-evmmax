@@ -5,6 +5,38 @@ const SIZE_F = 48
 
 const {init_curve_params} = require("./bn128_params.js")
 
+/* The contract ABI:
+    {
+        "type": "function"
+        "name": "MiMCSponge",
+        "inputs": [
+            {
+                "name": "xL_in",
+                "type": "uint256"
+            },
+            {
+                "name": "xR_in",
+                "type": "uint256"
+            },
+            {
+                "name": "k",
+                "type": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "xL_out",
+                "type": "uint256"
+            },
+            {
+                "name": "xR_out",
+                "type": "uint256"
+            }
+        ],
+        "stateMutability": "pure",
+    }
+*/
+
 function gen_mimc_contract() {
     let mimc = MiMCGenerator()
     
