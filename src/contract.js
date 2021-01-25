@@ -20,7 +20,7 @@ function gen_mimc_contract() {
 
     let ops = [
         gen_mstore(alloc_offset * 48, 0),
-        init_curve_params(offset_inputs),
+        init_curve_params(offset_mod),
         gen_calldatacopy(offset_inputs, 0, SIZE_F * 2)
     ]
     
