@@ -13,4 +13,7 @@ set -e
 # benchmark
 # go-ethereum/build/bin/evm --statdump --codefile build/mimc_cipher.hex --input 0x$(cat tests/tests.json | jq -r '.["tests"][0] | .["input"]') --bench run
 
-go-ethereum/build/bin/evm --statdump --codefile build/mimc_cipher.hex --input 0x$(cat tests/tests.json | jq -r '.["tests"][0] | .["input"]') run
+input=$(cat tests/tests.json | jq -r '.["tests"][0] | .["input"]')
+expect=$(cat tests/tests.json | jq -r '.["tests"][0] | .["expect"]')
+
+go-ethereum/build/bin/evm --statdump --codefile build/mimc_cipher.hex --input 0x$input run | grep -q 0x$expect

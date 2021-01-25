@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "bash test.sh | grep -q \"0x40ba1d69ffb73e7de2ad0ee730bf341a31bb41fa76a4194a6685b90d7a77272000000000000000000000000000000000a78a6ac573db2892701712f99a4a2856a9ec13f316c4a2d38be75ae4d976cb2e00000000000000000000000000000000\"",
+    "test": "./test.sh",
     "build": "rm -rf build && mkdir build && node src/contract.js > build/mimc_cipher.hex"
   },
   "repository": {
