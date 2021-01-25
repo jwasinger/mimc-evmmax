@@ -7,7 +7,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "./test.sh && node test.js 1 2 0",
+    "test": "./test.sh && node test.js 2 4 2",
     "build": "rm -rf build && mkdir build && node src/contract.js > build/mimc_cipher.hex"
   },
   "repository": {

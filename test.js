@@ -80,7 +80,7 @@ async function main() {
     let k_in_mont = to_mont(k_in)
 
 
-    let evm_input = convert_test_val_to_evm384_input(xL_in_mont) + convert_test_val_to_evm384_input(xR_in_mont)
+    let evm_input = convert_test_val_to_evm384_input(xL_in_mont) + convert_test_val_to_evm384_input(xR_in_mont) + convert_test_val_to_evm384_input(k_in_mont)
 
     console.log("test case for xL_in = " + xL_in.toString() + " xR_in = " + xR_in.toString() + " k = " + k_in.toString())
 
