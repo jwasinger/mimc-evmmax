@@ -1,5 +1,20 @@
 const {MiMCGenerator} = require('./mimcsponge.js')
 const {to_evm384_addressing_mode, constants, gen_return, gen_revert, gen_callvalue, gen_calldatacopy, gen_push, gen_dup, gen_mstore, gen_mload, gen_iszero, gen_eq, gen_jumpdest, gen_jumpi} = require("./util.js")
+
+function reverse_endianness(val) {
+    if (val.length % 2 != 0) {
+        throw("fuck")
+    }
+
+    let parts = []
+    for (let i = 0; i < val.length; i += 2) {
+        parts.push(val.slice(i, i + 2))
+    }
+    parts.reverse()
+
+    return parts.join("")
+}
+
 // const SIZE_F = constants.SIZE_F
 const SIZE_F = 48
 
@@ -89,10 +104,13 @@ function gen_mimc_contract() {
         gen_push(offset_inputs + 48),
         gen_calldatacopy(),
         // load k
+/*
         gen_push(32),
         gen_push(68),
         gen_push(offset_k),
-        gen_calldatacopy()
+*/
+        //gen_calldatacopy(),
+        gen_mstore(offset_k, reverse_endianness("30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001")),
         // TOOD: byteswap xL/xR/k
     ]
 
@@ -141,7 +159,7 @@ function gen_mimc_contract() {
 */
 
     ops = ops.concat([
-        gen_mstore(alloc_offset * 48, 0),
+        //gen_mstore(alloc_offset * 48, 0),
         init_curve_params(offset_mod)
     ])
     

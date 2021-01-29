@@ -28,6 +28,7 @@ module.exports.MiMCGenerator = () => {
 
         const num_rounds = 220
 
+        debugger
         this.emit([
             gen_mstore(from_evm384_addressing_mode(evm384_mem_start, pOne + SIZE_F), 0), // store something to expand memory up thru how much we want to allocate
             gen_mstore(from_evm384_addressing_mode(evm384_mem_start, pOne), "0100000000000000000000000000000000000000000000000000000000000000")
@@ -37,6 +38,7 @@ module.exports.MiMCGenerator = () => {
         this.emit([
             // t = k_in + xL_in
             gen_addmod384(tmp1, k_in, xL_in, modinv),
+            // gen_return(from_evm384_addressing_mode(0, k_in), 32),
 
             // t2 = t * t
             gen_mulmodmont384(tmp2, tmp1, tmp1, modinv),
