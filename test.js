@@ -108,9 +108,12 @@ async function main() {
     let evm_encoded_testcase = "3f1a1187"+evm_input
 
     let geth_evm384_output = await mimc_geth_evm384(evm384_encoded_testcase)
-    //let geth_output = await mimc_geth_evm(evm_encoded_testcase)
 
-    //assert.equal(geth_output, circomlib_output)
+    // the evm output is big-endian so it has to be byteswapped before comparing to evm384
+    let geth_output = await mimc_geth_evm(evm_encoded_testcase)
+    let geth_output_le = convert_test_val_to_evm384_input(geth_output.slice(0,64)) + convert_test_val_to_evm384_input(geth_output.slice(64, 128))
+
+    assert.equal(geth_output_le, circomlib_output)
     assert.equal(geth_evm384_output, circomlib_output)
 
     console.log("   passed")
