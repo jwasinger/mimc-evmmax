@@ -28,7 +28,6 @@ module.exports.MiMCGenerator = () => {
 
         const num_rounds = 220
 
-        debugger
         this.emit([
             gen_mstore(from_evm384_addressing_mode(evm384_mem_start, pOne + SIZE_F), 0), // store something to expand memory up thru how much we want to allocate
             gen_mstore(from_evm384_addressing_mode(evm384_mem_start, pOne), "0100000000000000000000000000000000000000000000000000000000000000")
@@ -36,19 +35,20 @@ module.exports.MiMCGenerator = () => {
 
         /* first round */ 
         this.emit([
-            // t = k_in + xL_in
-            gen_addmod384(tmp1, k_in, xL_in, modinv),
-            // gen_return(from_evm384_addressing_mode(0, k_in), 32),
-
-            // t2 = t * t
-            gen_mulmodmont384(tmp2, tmp1, tmp1, modinv),
+            // t2 = xL_in ** 2
+            gen_mulmodmont384(tmp2, xL_in, xL_in, modinv),
 
             // t4 = t2 * t2
             gen_mulmodmont384(tmp2, tmp2, tmp2, modinv),
 
             // xL_result = t^5 + xR_in
-            gen_mulmodmont384(tmp2, tmp2, tmp1, modinv),
-            gen_addmod384(xL_result, xR_in, tmp2, modinv)
+            gen_mulmodmont384(tmp2, tmp2, xL_in, modinv),
+            gen_addmod384(xL_result, xR_in, tmp2, modinv),
+
+/*
+            gen_mulmodmont384(xL_result, xL_result, pOne, modinv),
+            gen_return(from_evm384_addressing_mode(evm384_mem_start, xL_result), 32),
+*/
         ])
 
         tmp = xL_result_prev
@@ -59,10 +59,7 @@ module.exports.MiMCGenerator = () => {
         this.emit([
             gen_mstore(from_evm384_addressing_mode(evm384_mem_start, offset_round_constant), round_constants[1], 32),
             // t = k + k[i-1] + c
-            // gen_return(from_evm384_addressing_mode(evm384_mem_start, offset_round_constant), 48),
             gen_addmod384(xL_result, xL_result_prev, offset_round_constant, modinv),
-            //gen_return(from_evm384_addressing_mode(evm384_mem_start, offset_round_constant), 48),
-            gen_addmod384(xL_result, xL_result, k_in, modinv),
 
             // t2 = t * t
             gen_mulmodmont384(tmp1, xL_result, xL_result, modinv),
@@ -88,8 +85,7 @@ module.exports.MiMCGenerator = () => {
                 gen_mstore(from_evm384_addressing_mode(evm384_mem_start, offset_round_constant), round_constants[i % round_constants.length]),
                 
                 // t = x_L_result_prev + k_in + c
-                gen_addmod384(tmp1, k_in, offset_round_constant, modinv),
-                gen_addmod384(tmp1, tmp1, xL_result_prev, modinv),
+                gen_addmod384(tmp1, offset_round_constant, xL_result_prev, modinv),
 
                 // t**2 = t * t
                 gen_mulmodmont384(tmp2, tmp1, tmp1, modinv),
@@ -118,7 +114,6 @@ module.exports.MiMCGenerator = () => {
 
             // t = k_in  + mem[xL_result_table-1] + c;
             gen_addmod384(tmp1, xL_result_prev, offset_round_constant, modinv),
-            gen_addmod384(tmp1, tmp1, k_in, modinv),
 
             // t2 = t * t
             gen_mulmodmont384(tmp2, tmp1, tmp1, modinv),
@@ -137,7 +132,6 @@ module.exports.MiMCGenerator = () => {
 
             // t = mem[xL_result_table] + mem[xL_result_table - SIZE_F] + c
             gen_addmod384(tmp1, xL_out, offset_round_constant, modinv),
-            gen_addmod384(tmp1, tmp1, k_in, modinv),
 
             // t2 = t * t
             gen_mulmodmont384(tmp2, tmp1, tmp1, modinv),

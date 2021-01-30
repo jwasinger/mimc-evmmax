@@ -3,13 +3,6 @@ const path = require('path')
 
 const mimc_hash = require('circomlib').mimcsponge.hash
 
-const mimcspongeEVM_genContract = require('circomlib/src/mimcsponge_gencontract.js')
-const mimcspongeEVM_bytecode = mimcspongeEVM_genContract.createCode('mimcsponge', 220)
-
-const fs = require('fs')
-
-// fs.writeFileSync("mimc_evm.hex", mimcspongeEVM_bytecode)
-
 var exec = require('child_process').exec;
 function execute(command, callback){
     exec(command, function(error, stdout, stderr){ callback(stdout); });
@@ -65,7 +58,7 @@ function convert_test_val_to_evm_input(t) {
 
     let fill_len = 64 - t.length
     if (fill_len > 0) {
-        t += "0".repeat(fill_len)
+        t = "0".repeat(fill_len) + t
     }
 
     return t
@@ -73,14 +66,14 @@ function convert_test_val_to_evm_input(t) {
 
 function mimc_geth_evm(encoded_testcase) {
     return new Promise(resolve => {
-        exec(path.normalize("go-ethereum/build/bin/evm --statdump --code " + mimcspongeEVM_bytecode + " --input " + encoded_testcase + " run"), (a, b, sdf) => { 
+        exec(path.normalize("go-ethereum/build/bin/evm --statdump --codefile mimc_evm.hex --input " + encoded_testcase + " run"), (a, b, sdf) => { 
             resolve(b.slice(2, -1)) })
     })
 }
 
 function mimc_geth_evm384(encoded_testcase) {
     return new Promise(resolve => {
-        //exec(path.normalize("go-ethereum/build/bin/evm --statdump --codefile build/mimc_cipher.hex --input 0x3f1a1187f6ffff9f38682c59539ac13e2bedf86d5c8cf2f0de46ddcc5ebe0f3483ef141cebffff4fddda766e15c4c9030ef2bdb35bc0636007486ae193dced869390c507 run"), (a, b, sdf) => { 
+        debugger
         exec(path.normalize("go-ethereum/build/bin/evm --statdump --codefile build/mimc_cipher.hex --input " + encoded_testcase + " run"), (a, b, sdf) => { 
             resolve(b.slice(2, -1)) })
     })
@@ -95,7 +88,7 @@ async function main() {
     let xL_in = BigInt(process.argv[2])
     let xR_in = BigInt(process.argv[3])
 
-    const k = 0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001n
+    const k = 0 
     let circomlib_output = mimc_hash(xL_in, xR_in, k)
 
     circomlib_output = convert_test_val_to_evm384_input(circomlib_output.xL) + convert_test_val_to_evm384_input(circomlib_output.xR)
@@ -107,16 +100,17 @@ async function main() {
     let xR_in_mont = to_mont(xR_in)
 
     let evm384_input = convert_test_val_to_evm384_input(xL_in_mont) + convert_test_val_to_evm384_input(xR_in_mont)
+    let evm_input = convert_test_val_to_evm_input(xL_in) + convert_test_val_to_evm_input(xR_in)
 
     console.log("test case for xL_in = " + xL_in.toString() + " xR_in = " + xR_in.toString() + " k = " + k.toString())
 
     let evm384_encoded_testcase = "3f1a1187"+evm384_input
-    // let evm_encoded_testcase = "3f1a1187"+evm_input
+    let evm_encoded_testcase = "3f1a1187"+evm_input
 
     let geth_evm384_output = await mimc_geth_evm384(evm384_encoded_testcase)
-    // let geth_output = await mimc_geth_evm(evm_encoded_testcase)
-    
-    // assert.equal(geth_output, circomlib_output)
+    //let geth_output = await mimc_geth_evm(evm_encoded_testcase)
+
+    //assert.equal(geth_output, circomlib_output)
     assert.equal(geth_evm384_output, circomlib_output)
 
     console.log("   passed")
