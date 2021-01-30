@@ -3,6 +3,9 @@ const path = require('path')
 
 const mimc_hash = require('circomlib').mimcsponge.hash
 
+const mimcspongeEVM_genContract = require('circomlib/src/mimcsponge_gencontract.js')
+const mimcspongeEVM_bytecode = mimcspongeEVM_genContract.createCode('mimcsponge', 220)
+
 var exec = require('child_process').exec;
 function execute(command, callback){
     exec(command, function(error, stdout, stderr){ callback(stdout); });
@@ -66,7 +69,7 @@ function convert_test_val_to_evm_input(t) {
 
 function mimc_geth_evm(encoded_testcase) {
     return new Promise(resolve => {
-        exec(path.normalize("go-ethereum/build/bin/evm --statdump --codefile mimc_evm.hex --input " + encoded_testcase + " run"), (a, b, sdf) => { 
+        exec(path.normalize("go-ethereum/build/bin/evm --statdump --code " + mimcspongeEVM_bytecode + " --input " + encoded_testcase + " run"), (a, b, sdf) => { 
             resolve(b.slice(2, -1)) })
     })
 }
