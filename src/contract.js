@@ -163,13 +163,13 @@ function gen_mimc_contract() {
         init_curve_params(offset_mod)
     ])
     
-    mimc.mimc_cipher(to_evm384_addressing_mode(0, offset_inputs),
-                     to_evm384_addressing_mode(0, offset_inputs + SIZE_F), 
-                     to_evm384_addressing_mode(0, offset_k),
-                     to_evm384_addressing_mode(0, offset_outputs), 
-                     to_evm384_addressing_mode(0, offset_outputs + SIZE_F),
-                     to_evm384_addressing_mode(0, modinv),
-                     to_evm384_addressing_mode(0, alloc_offset),
+    mimc.mimc_cipher(offset_inputs,
+                     offset_inputs + SIZE_F,
+                     offset_k,
+                     offset_outputs,
+                     offset_outputs + SIZE_F,
+                     modinv,
+                     alloc_offset,
                      0)
 
     ops = ops.concat(mimc.ops)

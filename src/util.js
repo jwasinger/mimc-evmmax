@@ -15,6 +15,7 @@ function to_padded_hex(value) {
 // evm384 element size in bytes
 const SIZE_F = 48
 
+/*
 function to_evm384_addressing_mode(start, offset) {
     return (offset - start) / SIZE_F
 }
@@ -22,6 +23,7 @@ function to_evm384_addressing_mode(start, offset) {
 function from_evm384_addressing_mode(start, offset) {
     return (offset - start)  * SIZE_F
 }
+*/
 
 // convert a uint64 to a padded little endian hex string
 function uint32_to_be_hex_string(num) {
@@ -156,6 +158,8 @@ module.exports = {
     gen_return: gen_return,
     gen_revert: gen_revert,
     constants: constants,
+/*
     to_evm384_addressing_mode: to_evm384_addressing_mode,
     from_evm384_addressing_mode: from_evm384_addressing_mode
+*/
 }
