@@ -37,19 +37,18 @@ module.exports.MiMCGenerator = () => {
         this.emit([
             // t2 = xL_in ** 2
             gen_mulmodmont384(tmp2, xL_in, xL_in, modinv),
-            gen_return(tmp2, SIZE_F + 8),
 
             // t4 = t2 * t2
             gen_mulmodmont384(tmp2, tmp2, tmp2, modinv),
 
             // xL_result = t^5 + xR_in
             gen_mulmodmont384(tmp2, tmp2, xL_in, modinv),
+
             gen_addmod384(xL_result, xR_in, tmp2, modinv),
 
 /*
             gen_mulmodmont384(xL_result, xL_result, pOne, modinv),
-            gen_return(from_evm384_addressing_mode(evm384_mem_start, xL_result), 32),
-*/
+	    */
         ])
 
         tmp = xL_result_prev
@@ -72,7 +71,7 @@ module.exports.MiMCGenerator = () => {
             gen_mulmodmont384(xL_result, tmp1, xL_result, modinv),
 
             // xL_result = t5 + xL_in
-            gen_addmod384(xL_result, xL_result, xL_in, modinv)
+            gen_addmod384(xL_result, xL_result, xL_in, modinv),
         ])
 
         tmp = xL_result_prev_2
@@ -146,7 +145,7 @@ module.exports.MiMCGenerator = () => {
             
             // convert both outputs out of montgomery form
             gen_mulmodmont384(xR_out, xR_out, pOne, modinv),
-            gen_mulmodmont384(xL_out, xL_out, pOne, modinv)
+            gen_mulmodmont384(xL_out, xL_out, pOne, modinv),
         ])
     }
 

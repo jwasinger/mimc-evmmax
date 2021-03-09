@@ -13,7 +13,7 @@ function to_padded_hex(value) {
 }
 
 // evm384 element size in bytes
-const SIZE_F = 48
+const SIZE_F = 32
 
 /*
 function to_evm384_addressing_mode(start, offset) {
@@ -124,7 +124,7 @@ function gen_swap(value) {
 }
 
 const constants  = {
-    SIZE_F: 48,
+    SIZE_F: 32,
     OP_ADDMOD384: "c0",
     OP_SUBMOD384: "c1",
     OP_MULMODMONT384: "c2",
