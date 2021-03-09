@@ -16,7 +16,7 @@ function reverse_endianness(val) {
 }
 
 // const SIZE_F = constants.SIZE_F
-const SIZE_F = 48
+const SIZE_F = 32
 
 const {init_curve_params} = require("./bn128_params.js")
 
@@ -59,8 +59,7 @@ function gen_mimc_contract() {
     const offset_modinv = offset_mod + SIZE_F
     const offset_inputs = offset_modinv + SIZE_F
     const offset_outputs = offset_inputs + 2 * SIZE_F
-    const modinv = offset_outputs + 2 * SIZE_F
-    const offset_k = modinv + 2 * SIZE_F
+    const offset_k = offset_outputs + 2 * SIZE_F
     const alloc_offset = offset_k + SIZE_F 
 
     // TODO store bn128 params at right offset
@@ -168,7 +167,7 @@ function gen_mimc_contract() {
                      offset_k,
                      offset_outputs,
                      offset_outputs + SIZE_F,
-                     modinv,
+                     offset_mod,
                      alloc_offset,
                      0)
 

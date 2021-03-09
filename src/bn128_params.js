@@ -2,13 +2,14 @@ const { gen_return, gen_mstore, gen_push, constants } = require("./util.js")
 
 let BN128_CURVE_ORDER = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
 
-let BN128_R_INV = 134950519161967129512891662437158223871n >> 64n
+// let BN128_R_INV = 134950519161967129512891662437158223871n >> 64n
+let BN128_R_INV = 9786893198990664585
 
 // lower hex(inv_val & 0xffffffffffffffff)
 // upper hex(134950519161967129512891662437158223871 >> 64)
 
 // const SIZE_F = constants.SIZE_F
-const SIZE_F = 48
+const SIZE_F = 32
 
 function bigint_to_le_hexstring(bigint) {
     str = bigint.toString(16)
@@ -39,7 +40,7 @@ function init_curve_params(offset) {
 
 module.exports = {
     modulus: BN128_CURVE_ORDER,
-    r_inv: BN128_R_INV, // comes from https://github.com/cdetrio/wabt/blob/bls12-bignums-working/src/interp/interp.cc#L130
+    r_inv: BN128_R_INV,
     init_curve_params: init_curve_params,
     bigint_to_le_hexstring: bigint_to_le_hexstring
 }

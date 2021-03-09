@@ -37,6 +37,7 @@ module.exports.MiMCGenerator = () => {
         this.emit([
             // t2 = xL_in ** 2
             gen_mulmodmont384(tmp2, xL_in, xL_in, modinv),
+            gen_return(tmp2, SIZE_F + 8),
 
             // t4 = t2 * t2
             gen_mulmodmont384(tmp2, tmp2, tmp2, modinv),
