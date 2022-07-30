@@ -15,8 +15,7 @@ function reverse_endianness(val) {
     return parts.join("")
 }
 
-// const SIZE_F = constants.SIZE_F
-const SIZE_F = 32
+const SIZE_F = 1
 
 const {init_curve_params} = require("./bn128_params.js")
 
@@ -56,8 +55,7 @@ function gen_mimc_contract() {
     let mimc = MiMCGenerator()
     
     const offset_mod = 0
-    const offset_modinv = offset_mod + SIZE_F
-    const offset_inputs = offset_modinv + SIZE_F
+    const offset_inputs = offset_mod + SIZE_F
     const offset_outputs = offset_inputs + 2 * SIZE_F
     const offset_k = offset_outputs + 2 * SIZE_F
     const alloc_offset = offset_k + SIZE_F 
@@ -102,60 +100,10 @@ function gen_mimc_contract() {
         gen_push(36),
         gen_push(offset_inputs + 32),
         gen_calldatacopy(),
-        // load k
-/*
-        gen_push(32),
-        gen_push(68),
-        gen_push(offset_k),
-*/
         //gen_calldatacopy(),
         gen_mstore(offset_k, reverse_endianness("30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001")),
         // TOOD: byteswap xL/xR/k
     ]
-
-/*
-    // Check for incoming value
-    callvalue
-    iszero
-    jumpi <sig>
-    push 0
-    dup 1
-    revert
-
-    // Check signature
-    sig:
-    push 4
-    push 0
-    push 28
-    calldatacopy
-    push 0
-    mload
-    push 0x3f1a1187
-    eq
-    jumpi <init>
-    push 0
-    dup 1
-    revert
-
-    init:
-    // Load xL
-    push 32
-    push 4
-    push <offset_inputs + 16>
-    calldatacopy
-
-    // Load xR
-    push 32
-    push 36
-    push <offset_inputs + 16 + 48>
-    calldatacopy
-
-    // Load k
-    push 32
-    push 68
-    push <offset_k + 16>
-    calldatacopy
-*/
 
     ops = ops.concat([
         //gen_mstore(alloc_offset * 48, 0),

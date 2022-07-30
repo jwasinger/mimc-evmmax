@@ -1,4 +1,4 @@
-const { gen_return, gen_mstore, gen_push, constants } = require("./util.js")
+const { gen_setmodmax, gen_return, gen_mstore, gen_push, constants } = require("./util.js")
 
 let BN128_CURVE_ORDER = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
 
@@ -34,8 +34,10 @@ function bigint_to_le_hexstring(bigint) {
 BN128_CURVE_ORDER = bigint_to_le_hexstring(BN128_CURVE_ORDER)
 BN128_R_INV = bigint_to_le_hexstring(BN128_R_INV) + '0'.repeat(48)
 
+
 function init_curve_params(offset) {
-    return gen_mstore(offset, BN128_CURVE_ORDER) + gen_mstore(offset + SIZE_F, BN128_R_INV)
+    // modulus (bn128 curve order) occupies 4 64bit limbs
+    return gen_mstore(offset, BN128_CURVE_ORDER) + gen_setmodmax(offset, 4)
 }
 
 module.exports = {
