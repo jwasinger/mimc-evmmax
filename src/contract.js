@@ -93,15 +93,15 @@ function gen_mimc_contract() {
         // load xL
         gen_push(32),
         gen_push(4),
-        gen_push(offset_inputs),
+        gen_push(offset_inputs * constants.SIZE_F_FIELD),
         gen_calldatacopy(),
         // load xR
         gen_push(32),
         gen_push(36),
-        gen_push(offset_inputs + 32),
+        gen_push(offset_inputs * constants.SIZE_F_FIELD + constants.SIZE_F_FIELD),
         gen_calldatacopy(),
         //gen_calldatacopy(),
-        gen_mstore(offset_k, reverse_endianness("30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001")),
+        gen_mstore(offset_k * constants.SIZE_F_FIELD, reverse_endianness("30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001")),
         // TOOD: byteswap xL/xR/k
     ]
 
@@ -110,19 +110,18 @@ function gen_mimc_contract() {
         init_curve_params(offset_mod)
     ])
     
+    debugger
     mimc.mimc_cipher(offset_inputs,
                      offset_inputs + SIZE_F,
                      offset_k,
                      offset_outputs,
                      offset_outputs + SIZE_F,
-                     offset_mod,
-                     alloc_offset,
-                     0)
+                     alloc_offset)
 
     ops = ops.concat(mimc.ops)
 
     ops = ops.concat([
-        gen_return(offset_outputs, 2 * 32)
+        gen_return(offset_outputs * constants.SIZE_F_FIELD, 2 * 32)
     ])
 
     result = ops.join("")

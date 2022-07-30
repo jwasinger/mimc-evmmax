@@ -78,7 +78,6 @@ function mimc_geth_evm(encoded_testcase) {
 function mimc_geth_evm384(encoded_testcase) {
     return new Promise(resolve => {
         cmd = path.normalize("go-ethereum/build/bin/evm --statdump --codefile build/mimc_cipher.hex --input " + encoded_testcase + " run") 
-
         exec(cmd, (a, b, sdf) => { 
             resolve(b.slice(2, -1)) })
     })

@@ -1,7 +1,7 @@
 const round_constants = require("./mimc_round_constants").mimc_round_constants_mont
-const {constants, gen_return, gen_addmod384, gen_mulmodmont384, gen_mstore, gen_memcopy} = require("./util.js")
+const {constants, gen_return, gen_addmodmax, gen_mulmontmax, gen_mstore, gen_memcopy} = require("./util.js")
 
-const SIZE_F = 32 // constants.SIZE_F
+const SIZE_F = 1 // F occupies a single slot
 
 module.exports.MiMCGenerator = () => {
     self = this
@@ -11,7 +11,7 @@ module.exports.MiMCGenerator = () => {
         this.ops = this.ops.concat(vals)
     }
 
-    this.mimc_cipher = (xL_in, xR_in, k_in, xL_out, xR_out, modinv, alloc_offset, evm384_mem_start) => {
+    this.mimc_cipher = (xL_in, xR_in, k_in, xL_out, xR_out, alloc_offset) => {
 
         /* 
             most rounds make use of the results of the previous 2 rounds.
@@ -29,25 +29,27 @@ module.exports.MiMCGenerator = () => {
         const num_rounds = 220
 
         this.emit([
-            gen_mstore(pOne + SIZE_F, 0), // store something to expand memory up thru how much we want to allocate
-            gen_mstore(pOne, "0100000000000000000000000000000000000000000000000000000000000000")
+            // TODO this should not be necessary
+            gen_mstore((pOne + 1) * constants.SIZE_F_FIELD, 0), // store something to expand memory up thru how much we want to allocate
+            gen_mstore(pOne * constants.SIZE_F_FIELD, "0100000000000000000000000000000000000000000000000000000000000000")
         ])
 
         /* first round */ 
         this.emit([
+            //gen_return(tmp2 * constants.SIZE_F_FIELD, constants.SIZE_F_FIELD),
             // t2 = xL_in ** 2
-            gen_mulmodmont384(tmp2, xL_in, xL_in, modinv),
+            gen_mulmontmax(tmp2, xL_in, xL_in),
 
             // t4 = t2 * t2
-            gen_mulmodmont384(tmp2, tmp2, tmp2, modinv),
+            gen_mulmontmax(tmp2, tmp2, tmp2),
 
             // xL_result = t^5 + xR_in
-            gen_mulmodmont384(tmp2, tmp2, xL_in, modinv),
+            gen_mulmontmax(tmp2, tmp2, xL_in),
 
-            gen_addmod384(xL_result, xR_in, tmp2, modinv),
+            gen_addmodmax(xL_result, xR_in, tmp2),
 
 /*
-            gen_mulmodmont384(xL_result, xL_result, pOne, modinv),
+            gen_mulmontmax(xL_result, xL_result, pOne),
 	    */
         ])
 
@@ -57,21 +59,21 @@ module.exports.MiMCGenerator = () => {
 
         /* second round */
         this.emit([
-            gen_mstore(offset_round_constant, round_constants[1], 32),
+            gen_mstore(offset_round_constant * constants.SIZE_F_FIELD, round_constants[1]),
             // t = k + k[i-1] + c
-            gen_addmod384(xL_result, xL_result_prev, offset_round_constant, modinv),
+            gen_addmodmax(xL_result, xL_result_prev, offset_round_constant),
 
             // t2 = t * t
-            gen_mulmodmont384(tmp1, xL_result, xL_result, modinv),
+            gen_mulmontmax(tmp1, xL_result, xL_result),
 
             // t4 = t2 * t2
-            gen_mulmodmont384(tmp1, tmp1, tmp1, modinv),
+            gen_mulmontmax(tmp1, tmp1, tmp1),
 
             // t5 = t4 * t
-            gen_mulmodmont384(xL_result, tmp1, xL_result, modinv),
+            gen_mulmontmax(xL_result, tmp1, xL_result),
 
             // xL_result = t5 + xL_in
-            gen_addmod384(xL_result, xL_result, xL_in, modinv),
+            gen_addmodmax(xL_result, xL_result, xL_in),
         ])
 
         tmp = xL_result_prev_2
@@ -82,20 +84,20 @@ module.exports.MiMCGenerator = () => {
         /* rounds [3..num_rounds-2] (inclusive range) */
         for (let i = 2; i < num_rounds - 2; i++) {
             this.emit([
-                gen_mstore(offset_round_constant, round_constants[i % round_constants.length]),
+                gen_mstore(offset_round_constant * constants.SIZE_F_FIELD, round_constants[i % round_constants.length]),
                 
                 // t = x_L_result_prev + k_in + c
-                gen_addmod384(tmp1, offset_round_constant, xL_result_prev, modinv),
+                gen_addmodmax(tmp1, offset_round_constant, xL_result_prev),
 
                 // t**2 = t * t
-                gen_mulmodmont384(tmp2, tmp1, tmp1, modinv),
+                gen_mulmontmax(tmp2, tmp1, tmp1),
                 // t**4 = t**2 * t**2
-                gen_mulmodmont384(tmp2, tmp2, tmp2, modinv),
+                gen_mulmontmax(tmp2, tmp2, tmp2),
                 // xL_result = t**5
-                gen_mulmodmont384(xL_result, tmp2, tmp1, modinv),
+                gen_mulmontmax(xL_result, tmp2, tmp1),
 
                 // xL_result = xL_result + xL_result_prev_2
-                gen_addmod384(xL_result, xL_result, xL_result_prev_2, modinv)
+                gen_addmodmax(xL_result, xL_result, xL_result_prev_2)
             ])
 
             tmp = xL_result_prev_2
@@ -104,48 +106,48 @@ module.exports.MiMCGenerator = () => {
             xL_result = tmp
         }
 
-
         /* 2nd to last round */
         
         this.emit([
             // c = ( round_constants.buffer as usize + SIZE_F * ( (i - 1) % num_round_constants)) as usize;
-            gen_mstore(offset_round_constant, round_constants[(num_rounds - 2) % round_constants.length]),
+            gen_mstore(offset_round_constant * constants.SIZE_F_FIELD, round_constants[(num_rounds - 2) % round_constants.length]),
             // gen_return(offset_round_constant, SIZE_F),
 
             // t = k_in  + mem[xL_result_table-1] + c;
-            gen_addmod384(tmp1, xL_result_prev, offset_round_constant, modinv),
+            gen_addmodmax(tmp1, xL_result_prev, offset_round_constant),
 
             // t2 = t * t
-            gen_mulmodmont384(tmp2, tmp1, tmp1, modinv),
+            gen_mulmontmax(tmp2, tmp1, tmp1),
 
             // t4 = t2 * t2
-            gen_mulmodmont384(tmp2, tmp2, tmp2, modinv),
+            gen_mulmontmax(tmp2, tmp2, tmp2),
 
             // xL_out = t5 + xL_result_table_prev_2
-            gen_mulmodmont384(tmp2, tmp2, tmp1, modinv),
-            gen_addmod384(xL_out, tmp2, xL_result_prev_2, modinv),
+            gen_mulmontmax(tmp2, tmp2, tmp1),
+            gen_addmodmax(xL_out, tmp2, xL_result_prev_2),
         ])
 
+        debugger
         /* last round */
         this.emit([
-            gen_mstore(offset_round_constant, round_constants[(num_rounds - 1) % round_constants.length]),
+            gen_mstore(offset_round_constant * constants.SIZE_F_FIELD, round_constants[(num_rounds - 1) % round_constants.length]),
 
             // t = mem[xL_result_table] + mem[xL_result_table - SIZE_F] + c
-            gen_addmod384(tmp1, xL_out, offset_round_constant, modinv),
+            gen_addmodmax(tmp1, xL_out, offset_round_constant),
 
             // t2 = t * t
-            gen_mulmodmont384(tmp2, tmp1, tmp1, modinv),
+            gen_mulmontmax(tmp2, tmp1, tmp1),
 
             // t4 = t2 * t2;
-            gen_mulmodmont384(tmp2, tmp2, tmp2, modinv),
+            gen_mulmontmax(tmp2, tmp2, tmp2),
 
             // xR_out = xL_result_prev_2 + t4 * t
-            gen_mulmodmont384(tmp2, tmp2, tmp1, modinv),
-            gen_addmod384(xR_out, xL_result_prev, tmp2, modinv),
+            gen_mulmontmax(tmp2, tmp2, tmp1),
+            gen_addmodmax(xR_out, xL_result_prev, tmp2),
             
             // convert both outputs out of montgomery form
-            gen_mulmodmont384(xR_out, xR_out, pOne, modinv),
-            gen_mulmodmont384(xL_out, xL_out, pOne, modinv),
+            gen_mulmontmax(xR_out, xR_out, pOne),
+            gen_mulmontmax(xL_out, xL_out, pOne),
         ])
     }
 
@@ -163,7 +165,7 @@ module.exports.MiMCGenerator = () => {
         for (let i: usize = 1; i < num_inputs; i++) {
             // xL_in = xL_out + inputs[i]
             this.emit([
-                gen_addmod384(xL_in, xL_out, offset_inputs + SIZE_F * i)
+                gen_addmodmax(xL_in, xL_out, offset_inputs + SIZE_F * i)
             ])
 
             // xR_in = xR_out
