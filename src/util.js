@@ -12,9 +12,7 @@ function to_padded_hex(value) {
     return value
 }
 
-// evm384 element size in bytes
-const SIZE_F = 48
-
+/*
 function to_evm384_addressing_mode(start, offset) {
     return (offset - start) / SIZE_F
 }
@@ -22,6 +20,7 @@ function to_evm384_addressing_mode(start, offset) {
 function from_evm384_addressing_mode(start, offset) {
     return (offset - start)  * SIZE_F
 }
+*/
 
 // convert a uint64 to a padded little endian hex string
 function uint32_to_be_hex_string(num) {
@@ -36,11 +35,17 @@ function uint32_to_be_hex_string(num) {
     return result
 }
 
-function encode_offsets(out, x, y, curve_params) {
-    return uint32_to_be_hex_string(out) +
-        uint32_to_be_hex_string(x) +
-        uint32_to_be_hex_string(y) +
-        uint32_to_be_hex_string(curve_params)
+function encode_num_to_byte_str(num) {
+    if (num < 0 || num > 255) {
+        throw Exception("shit")
+    }
+    return num.toString(16)
+}
+
+function encode_offsets(out, x, y) {
+    return to_padded_hex(out) +
+        to_padded_hex(x) +
+        to_padded_hex(y)
 }
 
 function gen_mstore(offset, value) {
@@ -122,21 +127,27 @@ function gen_swap(value) {
 }
 
 const constants  = {
-    SIZE_F: 48,
-    OP_ADDMOD384: "c0",
-    OP_SUBMOD384: "c1",
-    OP_MULMODMONT384: "c2",
+    SIZE_F_FIELD: 32, // slot size in bytes
+    SIZE_F: 1, // TODO bad, remove
+    OP_SETMODMAX: "0c",
+    OP_ADDMODMAX: "0d",
+    OP_SUBMODMAX: "0e",
+    OP_MULMONTMAX: "0f",
 }
 
 module.exports = {
-    gen_addmod384: (offset_out, offset_x, offset_y, offset_mod) => {
-        return gen_push(encode_offsets(offset_out, offset_x, offset_y, offset_mod)) + constants.OP_ADDMOD384
+    gen_setmodmax: (slot, size) => {
+        // TODO assert slot bounds
+        return gen_push(to_padded_hex(size) + to_padded_hex(slot)) + constants.OP_SETMODMAX
     },
-    gen_submod384: (offset_out, offset_x, offset_y, offset_mod) => {
-        return gen_push(encode_offsets(offset_out, offset_x, offset_y, offset_mod)) + constants.OP_SUBMOD384
+    gen_addmodmax: (offset_out, offset_x, offset_y, offset_mod) => {
+        return gen_push(encode_offsets(offset_out, offset_x, offset_y)) + constants.OP_ADDMODMAX
     },
-    gen_mulmodmont384: (offset_out, offset_x, offset_y, offset_mod) => {
-        return gen_push(encode_offsets(offset_out, offset_x, offset_y, offset_mod)) + constants.OP_MULMODMONT384
+    gen_submodmax: (offset_out, offset_x, offset_y, offset_mod) => {
+        return gen_push(encode_offsets(offset_out, offset_x, offset_y)) + constants.OP_SUBMODMAX
+    },
+    gen_mulmontmax: (offset_out, offset_x, offset_y, offset_mod) => {
+        return gen_push(encode_offsets(offset_out, offset_x, offset_y)) + constants.OP_MULMONTMAX
     },
     gen_push: gen_push,
     gen_dup: gen_dup,
@@ -156,6 +167,8 @@ module.exports = {
     gen_return: gen_return,
     gen_revert: gen_revert,
     constants: constants,
+/*
     to_evm384_addressing_mode: to_evm384_addressing_mode,
     from_evm384_addressing_mode: from_evm384_addressing_mode
+*/
 }

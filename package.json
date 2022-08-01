@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "node test.js 2 4 0",
-    "build": "rm -rf build && mkdir build && node build_evm_mimc.js && node src/contract.js > build/mimc_cipher.hex"
+    "build": "rm -rf build && mkdir build && node src/contract.js > build/mimc_cipher.hex"
   },
   "repository": {
     "type": "git",

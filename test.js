@@ -69,15 +69,16 @@ function convert_test_val_to_evm_input(t) {
 
 function mimc_geth_evm(encoded_testcase) {
     return new Promise(resolve => {
-        exec(path.normalize("go-ethereum/build/bin/evm --statdump --code " + mimcspongeEVM_bytecode + " --input " + encoded_testcase + " run"), (a, b, sdf) => { 
+        cmd = path.normalize("go-ethereum/build/bin/evm --statdump --code " + mimcspongeEVM_bytecode + " --input " + encoded_testcase + " run")
+        exec(cmd, (a, b, sdf) => { 
             resolve(b.slice(2, -1)) })
     })
 }
 
 function mimc_geth_evm384(encoded_testcase) {
     return new Promise(resolve => {
-        debugger
-        exec(path.normalize("go-ethereum/build/bin/evm --statdump --codefile build/mimc_cipher.hex --input " + encoded_testcase + " run"), (a, b, sdf) => { 
+        cmd = path.normalize("go-ethereum/build/bin/evm --statdump --codefile build/mimc_cipher.hex --input " + encoded_testcase + " run") 
+        exec(cmd, (a, b, sdf) => { 
             resolve(b.slice(2, -1)) })
     })
 }

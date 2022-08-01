@@ -16,4 +16,4 @@ set -e
 input=$(cat tests/tests.json | jq -r '.["tests"][0] | .["input"]')
 expect=$(cat tests/tests.json | jq -r '.["tests"][0] | .["expect"]')
 
-go-ethereum/build/bin/evm --statdump --codefile build/mimc_cipher.hex --input 0x$input run | grep -q 0x$expect
+go-ethereum/build/bin/evm --bench --statdump --codefile build/mimc_cipher.hex --input 0x$input run | grep -q 0x$expect

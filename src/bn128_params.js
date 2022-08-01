@@ -1,14 +1,15 @@
-const { gen_return, gen_mstore, gen_push, constants } = require("./util.js")
+const { gen_setmodmax, gen_return, gen_mstore, gen_push, constants } = require("./util.js")
 
 let BN128_CURVE_ORDER = 21888242871839275222246405745257275088548364400416034343698204186575808495617n
 
-let BN128_R_INV = 134950519161967129512891662437158223871n >> 64n
+// let BN128_R_INV = 134950519161967129512891662437158223871n >> 64n
+let BN128_R_INV = 14042775128853446655n
 
 // lower hex(inv_val & 0xffffffffffffffff)
 // upper hex(134950519161967129512891662437158223871 >> 64)
 
 // const SIZE_F = constants.SIZE_F
-const SIZE_F = 48
+const SIZE_F = 32
 
 function bigint_to_le_hexstring(bigint) {
     str = bigint.toString(16)
@@ -33,13 +34,15 @@ function bigint_to_le_hexstring(bigint) {
 BN128_CURVE_ORDER = bigint_to_le_hexstring(BN128_CURVE_ORDER)
 BN128_R_INV = bigint_to_le_hexstring(BN128_R_INV) + '0'.repeat(48)
 
+
 function init_curve_params(offset) {
-    return gen_mstore(offset, BN128_CURVE_ORDER) + gen_mstore(offset + SIZE_F, BN128_R_INV)
+    // modulus (bn128 curve order) occupies 4 64bit limbs
+    return gen_mstore(offset, BN128_CURVE_ORDER) + gen_setmodmax(offset, 4)
 }
 
 module.exports = {
     modulus: BN128_CURVE_ORDER,
-    r_inv: BN128_R_INV, // comes from https://github.com/cdetrio/wabt/blob/bls12-bignums-working/src/interp/interp.cc#L130
+    r_inv: BN128_R_INV,
     init_curve_params: init_curve_params,
     bigint_to_le_hexstring: bigint_to_le_hexstring
 }
