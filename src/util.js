@@ -43,9 +43,11 @@ function encode_num_to_byte_str(num) {
 }
 
 function encode_offsets(out, x, y) {
-    return to_padded_hex(out) +
-        to_padded_hex(x) +
-        to_padded_hex(y)
+    let result = to_padded_hex(out) + to_padded_hex(x) + to_padded_hex(y)
+    if (result.length != 6) {
+        throw Exception("encoded offsets should have length of 6")
+    }
+    return result
 }
 
 function gen_mstore(offset, value) {
@@ -129,25 +131,26 @@ function gen_swap(value) {
 const constants  = {
     SIZE_F_FIELD: 32, // slot size in bytes
     SIZE_F: 1, // TODO bad, remove
-    OP_SETMODMAX: "0c",
-    OP_ADDMODMAX: "0d",
-    OP_SUBMODMAX: "0e",
-    OP_MULMONTMAX: "0f",
+    OP_SETMODMAX: "21",
+    OP_ADDMODMAX: "22",
+    OP_SUBMODMAX: "23",
+    OP_MULMONTMAX: "24",
+    OP_TOMONTMAX: "25",
 }
 
 module.exports = {
-    gen_setmodmax: (slot, size) => {
+    gen_setmodmax: (offset, limb_count) => {
         // TODO assert slot bounds
-        return gen_push(to_padded_hex(size) + to_padded_hex(slot)) + constants.OP_SETMODMAX
+        return gen_push(to_padded_hex(limb_count)) + gen_push(to_padded_hex(offset)) + constants.OP_SETMODMAX
     },
     gen_addmodmax: (offset_out, offset_x, offset_y, offset_mod) => {
-        return gen_push(encode_offsets(offset_out, offset_x, offset_y)) + constants.OP_ADDMODMAX
+        return constants.OP_ADDMODMAX + encode_offsets(offset_out, offset_x, offset_y)
     },
     gen_submodmax: (offset_out, offset_x, offset_y, offset_mod) => {
-        return gen_push(encode_offsets(offset_out, offset_x, offset_y)) + constants.OP_SUBMODMAX
+        return constants.OP_SUBMODMAX + encode_offsets(offset_out, offset_x, offset_y)
     },
     gen_mulmontmax: (offset_out, offset_x, offset_y, offset_mod) => {
-        return gen_push(encode_offsets(offset_out, offset_x, offset_y)) + constants.OP_MULMONTMAX
+        return constants.OP_MULMONTMAX + encode_offsets(offset_out, offset_x, offset_y)
     },
     gen_push: gen_push,
     gen_dup: gen_dup,
